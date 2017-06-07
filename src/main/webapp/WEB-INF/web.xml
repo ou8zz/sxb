@@ -1,0 +1,45 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+    
+  	<display-name>sxb</display-name>
+  
+    <servlet>
+        <servlet-name>sxb</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value></param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+	<!-- 设置spring访问所有资源 -->
+    <servlet-mapping>
+        <servlet-name>sxb</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    
+	<!-- Spring -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/sxb-service.xml</param-value>
+	</context-param>
+	<listener>
+	    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	
+	<!-- TLS sig 可以设置whiteList白名单，多个以逗号隔开 -->
+    <filter>
+    	<filter-name>tls</filter-name>
+    	<filter-class>com.sxb.tls.TlsFilter</filter-class>
+    	<init-param>
+    		<param-name>whiteList</param-name>
+    		<param-value>/register, /reqjssdk, /user_getinfo, /comment_listget, /replay_detail, /feedback, /*.php</param-value>
+    	</init-param>
+    </filter>
+    <filter-mapping>
+    	<filter-name>tls</filter-name>
+    	<url-pattern>/*</url-pattern>
+    </filter-mapping>
+</web-app>

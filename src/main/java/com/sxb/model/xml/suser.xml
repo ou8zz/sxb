@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="suser">
+	
+	<!-- 查询用户信息 -->
+	<select id="getSusers" resultType="com.sxb.model.Suser" parameterType="com.sxb.model.Suser">
+	    SELECT * FROM user
+	    <where>
+	    	<if test="userphone != null"> and userphone=#{userphone} </if>
+	    	<if test="username != null"> and username=#{username} </if>
+   	    	<if test="password != null"> and password=#{password} </if>
+   	    	<if test="online != null"> and online=#{online} </if>
+   	    </where>
+	</select>
+
+	<!-- 创建用户信息	 -->
+	<insert id="addSuser" parameterType="com.sxb.model.Suser">
+		INSERT INTO user (userphone,username,password,headimagepath,atype,phoneno,unionno) 
+		VALUES (#{userphone}, #{username}, #{password}, #{headimagepath}, #{atype}, #{phoneno}, #{unionno})
+	</insert>
+
+	<!-- 修改用户信息及状态 -->
+	<update id="editSuser" parameterType="com.sxb.model.Suser">
+	    UPDATE user
+	    <set>
+			<if test="username != null"> username=#{username}, </if>
+			<if test="sex != null"> sex=#{sex}, </if>
+			<if test="constellation != null"> constellation=#{constellation}, </if>
+			<if test="address != null"> address=#{address}, </if>
+			<if test="personal_signature != null"> personal_signature=#{personal_signature}, </if>
+			<if test="headimagepath != null"> headimagepath=#{headimagepath}, </if>
+			<if test="atype != null"> atype=#{atype}, </if>
+			<if test="phoneno != null"> phoneno=#{phoneno}, </if>
+			<if test="unionno != null"> unionno=#{unionno}, </if>
+	    </set>
+	    where userphone=#{userphone}
+	</update>
+
+	<!-- 创建登录日志信息	 -->
+	<insert id="addLoginLog" parameterType="com.sxb.model.Suser">
+		INSERT INTO login_logs (account, deviceinfo, ipaddress, atype, logininfo) 
+		VALUES (#{userphone}, #{deviceinfo}, #{ipaddress}, #{atype}, #{logininfo})
+	</insert>
+</mapper>
+

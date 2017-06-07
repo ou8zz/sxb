@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="replay">
+
+	<!-- insert replay -->
+	<insert id="addReplay" parameterType="com.sxb.model.Replay">
+		insert into replay(programid, userphone, subject, state, groupid, begin_time, url, addr, replayid, duration, coverimagepath) 
+		values(#{programid}, #{userphone}, #{subject}, #{state}, #{groupid}, #{begin_time}, #{url}, #{addr}, #{replayid}, #{duration}, #{coverimagepath})
+	</insert>
+	
+	<!-- get replay or replay list-->
+	<select id="getReplay" parameterType="com.sxb.model.Replay" resultType="com.sxb.model.Replay">
+		select * from replay
+		<where>
+	    	<if test="userphone != null"> and userphone=#{userphone} </if>
+	    	<if test="begin_time != null"> <![CDATA[ and begin_time < #{begin_time} ]]>  </if>
+   	    </where>
+   	    order by begin_time desc
+	</select>
+</mapper>
+

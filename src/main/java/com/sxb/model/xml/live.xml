@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="live">
+	<!--<cache /> 这个标签默认缓存。OH NO -->
+	
+	<!--  获取直播列表 -->
+	<select id="getLiveRecords" resultType="com.sxb.model.LiveRecord" parameterType="com.sxb.model.LiveRecord">
+	    SELECT * FROM t_live_record
+	    <where>
+	    	and status = 1
+	    	<if test="host_uid != null"> and host_uid=#{host_uid} </if>
+	    	<if test="chat_room_id != null"> chat_room_id = #{chat_room_id} </if>
+   	    </where>
+	</select>
+	
+	<select id="getLiveRecordCount" resultType="Integer" parameterType="com.sxb.model.LiveRecord">
+	    SELECT count(1) FROM t_live_record
+	    <where>
+	    	and status = 1
+	    	<if test="host_uid != null"> and host_uid=#{host_uid} </if>
+	    	<if test="modify_time != null"> <![CDATA[ and modify_time < #{modify_time} ]]> </if>
+	    	
+   	    </where>
+	</select>
+
+	<!-- 新增直播 -->
+	<insert id="addLiveRecord" parameterType="com.sxb.model.LiveRecord">
+		INSERT INTO t_live_record (title, cover, host_uid, host_avatar, host_username, longitude, latitude, address, av_room_id, 
+									chat_room_id, admire_count, watch_count, time_span, create_time, modify_time, status)
+		VALUES (#{title}, #{cover}, #{host_uid}, #{host_avatar}, #{host_username}, #{longitude}, #{latitude}, #{address}, #{av_room_id}, 
+					#{chat_room_id}, #{admire_count}, #{watch_count}, #{time_span}, #{create_time}, #{modify_time}, 1)
+	</insert>
+	
+	<!-- 根据主播Uid更新数据 -->
+	<update id="updateLiveRecord" parameterType="com.sxb.model.LiveRecord">
+	    UPDATE t_live_record
+	    <set>
+			<if test="cover != null"> cover=#{cover}, </if>
+			<if test="watch_count != null"> watch_count=#{watch_count}, </if>
+			<if test="real_watch != null"> real_watch=real_watch+#{real_watch}, </if>
+		    <if test="time_span != null"> time_span=#{time_span}, </if>
+		    <if test="admire_count != null"> admire_count=#{admire_count}, </if>
+		    <if test="modify_time != null"> modify_time=#{modify_time, jdbcType=TIMESTAMP}, </if>
+	    </set>
+		<where>
+			and status = 1
+			<if test="host_uid != null"> and host_uid = #{host_uid} </if>
+			<if test="chat_room_id != null"> and chat_room_id = #{chat_room_id} </if>
+		</where>
+	</update>
+	
+	<!-- 删除直播 
+	<delete id="delLiveRecord" parameterType="String">DELETE FROM t_live_record WHERE host_uid=#{host_uid}</delete>-->
+	
+	<!-- 删除直播修改为不删除，修改标记为来标示，保留原本直播数据 -->
+	<update id="delLiveRecord" parameterType="String">UPDATE t_live_record SET status=0 WHERE status=1 and host_uid=#{host_uid}</update>
+	
+	<!-- 删除不活跃的记录 
+	<delete id="deleteInactiveRecord" parameterType="Date">DELETE FROM t_live_record WHERE <![CDATA[ modify_time < #{modify_time} ]]></delete>-->
+	
+	<!-- 删除不活跃的记录 -->
+	<update id="deleteInactiveRecord" parameterType="Date">UPDATE t_live_record SET status=0 WHERE <![CDATA[ status=1 and modify_time < #{modify_time} ]]></update>
+
+	<!-- 创建 AvRoomId -->
+	<insert id="createAvRoom" parameterType="String">INSERT INTO t_user_av_room (uid) VALUES (#{uid})</insert>
+	
+	<!-- 从数据库加载 AvRoomId -->
+	<select id="getAvRoomId" parameterType="String" resultType="Integer">SELECT id FROM t_user_av_room WHERE uid = #{uid}</select>
+</mapper>
+

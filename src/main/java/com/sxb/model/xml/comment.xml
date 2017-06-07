@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="comment">
+	
+	<!-- addComment -->
+	<insert id="addComment" parameterType="com.sxb.model.Comment">
+		insert into comment (article_uuid, content, userphone, create_time) values (#{article_uuid}, #{content}, #{userphone}, #{create_time})
+	</insert>
+	
+	<!-- 查询评论情况 -->
+	<select id="getComment" parameterType="com.sxb.model.Comment" resultType="com.sxb.model.Comment">
+		select u.username, u.headimagepath, a.*, a.id as comment_uuid,
+		(select count(*) from comment_favor b where a.id = b.comment_uuid) as favor_num, 
+		(select count(*) from comment_favor c where c.comment_uuid = a.id and c.userphone = #{userphone} ) as favor
+		from comment a left join user u on a.userphone=u.userphone where article_uuid = #{article_uuid}
+		order by create_time desc
+	</select>
+	
+	<!-- 获取所有article_uuid的评论的数量 -->
+ 	<select id="getCommentCount" resultType="Integer" parameterType="String">
+ 		select count(*) as num from comment where article_uuid = #{article_uuid}
+ 	</select>
+ 	
+ 	<!-- 获取article_uuid文章有多少个赞 -->
+ 	<select id="getArticleFavorCount" resultType="Integer" parameterType="String">
+ 		select count(*) as num from article_favor where article_uuid = #{article_uuid} and favor = true
+ 	</select>
+ 	
+	<!-- 查询用户是否点赞过 -->
+ 	<select id="getUserFavor" resultType="com.sxb.model.Comment" parameterType="com.sxb.model.Comment">
+ 		select * from comment_favor where userphone = #{userphone} and comment_uuid = #{comment_uuid}
+ 	</select>
+ 	
+	<!-- 设置用户点赞 -->
+ 	<insert id="setUserFavor" parameterType="com.sxb.model.Comment">
+ 		insert into comment_favor (comment_uuid, userphone, favor) values (#{comment_uuid}, #{userphone}, #{favor})
+ 	</insert>
+ 	
+ 	<!-- 设置用户是否点赞 true or false -->
+ 	<update id="editUserFavor" parameterType="com.sxb.model.Comment">
+ 		update comment_favor set favor = #{favor} where userphone = #{userphone} and comment_uuid = #{comment_uuid}
+ 	</update>
+ 	
+ 	<!-- 用户提交的反馈 -->
+ 	<insert id="feedback" parameterType="com.sxb.model.Comment">
+ 		insert into feedback (userphone, content) values (#{userphone}, #{content})
+ 	</insert>
+</mapper>
+

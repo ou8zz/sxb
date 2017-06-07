@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+	 <!-- 静态资源访问
+	<mvc:resources location="/" mapping="/**" /> -->
+	<mvc:default-servlet-handler />
+	<mvc:annotation-driven />		<!-- 必须添加mvc:annotation-driven 否则所有controller失效 -->
+	
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+	    <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+	    <property name="prefix" value="/WEB-INF/"/>
+	    <property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<!-- 上传文件 -->  
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	    <property name="defaultEncoding" value="utf-8"/>
+	    <!-- 最大内存大小 -->
+	    <property name="maxInMemorySize" value="10240"/>
+	    <!-- 最大文件大小，-1为不限制大小 -->
+	    <property name="maxUploadSize" value="-1"/>
+	</bean>
+	
+	<!-- 使用jackson处理json请求 spring4-->
+	<bean id="stringConverter" class="org.springframework.http.converter.StringHttpMessageConverter">
+    	<property name="supportedMediaTypes">
+            <list>
+                <value>text/plain;charset=UTF-8</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="jsonConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <ref bean="stringConverter" />
+                <ref bean="jsonConverter" />
+            </list>
+        </property>
+    </bean>
+	
+	<aop:aspectj-autoproxy />
+	
+	<!-- Annotation-based configuration
+	<context:annotation-config /> -->
+	<context:component-scan base-package="com.sxb.controller" />
+    <context:component-scan base-package="com.sxb.service.impl" />
+    <context:component-scan base-package="com.sxb.task" />
+
+	<!-- spring定时调度，开启这个配置，spring才能识别@Scheduled注解    -->
+	<task:annotation-driven scheduler="qbScheduler" mode="proxy"/>
+	<task:scheduler id="qbScheduler" pool-size="10"/>
+    
+	<!-- Make all @Transactional beans -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	<!-- TransactionManager -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<context:property-placeholder location="classpath:conf.properties" />
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${driver}"/>
+		<property name="url" value="${url}"/>
+	  	<property name="username" value="${jusername}"/>
+	  	<property name="password" value="${jpassword}"/>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+  		<property name="configLocation" value="classpath:WEB-INF/SqlMapConfig.xml" />
+  		<property name="mapperLocations" value="classpath:com/sxb/model/**/*.xml" />
+  		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- 配置SQLSession模板 -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+    	<constructor-arg index="0" ref="sqlSessionFactory" />
+    </bean>  
+</beans>
